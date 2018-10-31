@@ -114,7 +114,7 @@ defmodule Bamboo.Mailer do
 
   @doc false
   def deliver_now(adapter, email, config) do
-    email = email |> validate_and_normalize(adapter)
+    email = email |> clean_assigns() |> validate_and_normalize(adapter)
 
     if email.to == [] && email.cc == [] && email.bcc == [] do
       debug_unsent(email)
@@ -128,7 +128,7 @@ defmodule Bamboo.Mailer do
 
   @doc false
   def deliver_later(adapter, email, config) do
-    email = email |> validate_and_normalize(adapter)
+    email = email |> clean_assigns() |> validate_and_normalize(adapter)
 
     if email.to == [] && email.cc == [] && email.bcc == [] do
       debug_unsent(email)
@@ -252,5 +252,10 @@ defmodule Bamboo.Mailer do
   defp handle_adapter_config(base_config = %{adapter: adapter}) do
     adapter.handle_config(base_config)
     |> Map.put_new(:deliver_later_strategy, Bamboo.TaskSupervisorStrategy)
+  end
+
+  @doc false
+  def clean_assigns(email) do
+    %{email | assigns: :assigns_removed_after_render}
   end
 end
